@@ -5,7 +5,7 @@
 #	AUTHORS: Jan Kubica 		(xkubic39) - xkubic39@stud.fit.vutbr.cz
 #			 Rostislav navrátil (xnavra57) - xnavra57@stud.fit.vutbr.cz - zastupce tymu
 
-CC = g++
+CC=g++
 CLAGS=-g -O2 
 PFLAGS=-lsimlib -lm
 
