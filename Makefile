@@ -6,7 +6,7 @@
 #			 Rostislav navrátil (xnavra57) - xnavra57@stud.fit.vutbr.cz - zastupce tymu
 
 CC = g++
-CFLAGS = -g -O2 -Wall -pedantic -Wextra
+CFLAGS = -g -O2
 PFLAGS = -lsimlib -lm
 
 FILE = BioVavrinec
