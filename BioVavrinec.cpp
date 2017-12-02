@@ -11,6 +11,7 @@
 #include "simlib.h"
 #include <stdio.h>
 #include <iostream>
+#include <string>
 
 using std::cout;
 using std::endl;
@@ -23,6 +24,9 @@ bool PO_PASTVE = true;
 
 // Mleko
 double MLEKO = 0;
+
+// Mleko nadojeno za posledni dojeni.
+double POSLEDNI_DOJENI = 0;
 
 // Pocet podojenych krav.
 unsigned int pocetPodojenychKrav = 0;
@@ -62,6 +66,7 @@ Store stani("Mista na dojeni", STANI);
 // Kravy produkujici mleko.
 Store kravy("Kravy", POCET_KRAV);
 
+std::string cas(double t);
 
 class Krava : public Process {
     void Behavior() {
@@ -71,33 +76,35 @@ class Krava : public Process {
                 Enter(stani);
                 Enter(dojicka);
                 
-                cout << "Krava vstupuje do dojiciho boxu." << endl;
+                cout << "[" << cas(Time) << "] " << "Krava vstupuje do dojiciho boxu." << endl;
 
                 Wait(Uniform(1 * MINUTA, 3 * MINUTA));
                 Leave(dojicka);
 
-                cout << "Krava doji bez dojicky." << endl;
+                cout << "[" << cas(Time) << "] " << "Krava doji bez dojicky." << endl;
 
                 // Dojeni samotne kravy.
                 Wait(Uniform(4 * MINUTA, 6 * MINUTA));
 
                 double nadojeno = Uniform(8, 10);
+                POSLEDNI_DOJENI += nadojeno;
                 MLEKO += nadojeno; // Produkce mleka.
                 pocetPodojenychKrav++;
 
-                cout << "Krava cislo " << pocetPodojenychKrav << " nadojila " << nadojeno << "litru mleka." << endl;
+                cout << "[" << cas(Time) << "] " << "Krava cislo " << pocetPodojenychKrav << " nadojila " << nadojeno << " litru mleka." << endl;
                 
                 Enter(dojicka);
                 Wait(Uniform(2* MINUTA, 3* MINUTA));
                 Leave(stani);
                 Leave(dojicka);
 
-                cout << "Krava je uvolnena z boxu dojickou." << endl;
+                cout << "[" << cas(Time) << "] " << "Krava je uvolnena z boxu dojickou." << endl;
 
                 WaitUntil(KRAVY_READY == false);
             }
             else {
               WaitUntil(KRAVY_READY);
+              POSLEDNI_DOJENI = 0;
             }
         }
     }
@@ -111,7 +118,7 @@ class Stado : public Process{
                 // Nahaneni krav.
                 if(dojicka.Empty() && PO_PASTVE){
 
-                    cout << "Dojicka nahani kravy." << endl;
+                    cout << "[" << cas(Time) << "] " << "Dojicka nahani kravy." << endl;
 
                     PO_PASTVE = false;
 
@@ -119,9 +126,9 @@ class Stado : public Process{
                     Wait(Uniform(20*MINUTA,30*MINUTA));
                     Leave(dojicka);
 
-                    cout << "Kravy jsou nahnane." << endl;
+                    cout << "[" << cas(Time) << "] " << "Kravy jsou nahnane." << endl;
 
-                    cout << "Stado ceka na podojeni." << endl;
+                    cout << "[" << cas(Time) << "] " << "Stado ceka na podojeni." << endl;
 
                     KRAVY_READY = true;
 
@@ -130,22 +137,23 @@ class Stado : public Process{
 
                     KRAVY_READY = false;
 
-                    cout << "Podojilo se 50 krav a bylo nadojeno " << MLEKO << " litru mleka." << endl;
+                    cout << "[" << cas(Time) << "] " << "Podojilo se 50 krav a bylo nadojeno " << POSLEDNI_DOJENI << " litru mleka." << endl;
+                    cout << "[" << cas(Time) << "] " << "V nadrzi je " << MLEKO << " litru mleka." << endl << endl;
 
                     pocetPodojenychKrav = 0;
 
-                    cout << "Kravy cekaji na farme." << endl;
+                    cout << "[" << cas(Time) << "] " << "Kravy cekaji na farme." << endl;
 
                     // Kravy jsou na farme.
                     Wait(Uniform(1*HODINA, 2*HODINA));
 
-                    cout << "Stado je vypusteno na pastvu." << endl;
+                    cout << "[" << cas(Time) << "] " << "Stado je vypusteno na pastvu." << endl;
 
                     // Kravy se pasou.
                     Wait(Uniform(4*HODINA, 5*HODINA));
                     PO_PASTVE = true;
 
-                    cout << "Kravy jsou ready na nahnani." << endl << endl;
+                    cout << "[" << cas(Time) << "] " << "Kravy jsou ready na nahnani." << endl << endl;
 
                 }
                 if (!JE_DEN) {
@@ -162,19 +170,36 @@ Stat nocDoba("Nocni doba");
 class Den_Noc : public Process {
     void Behavior() {
         while (1) {
-            cout << "Je den." << endl;
+            cout << "[" << cas(Time) << "] " << "Je den." << endl;
             Wait(DEN); denDoba(DEN/60);
             JE_DEN = !JE_DEN;
-            cout << "Je noc." << endl;
+            cout << "[" << cas(Time) << "] " << "Je noc." << endl;
             Wait(NOC); nocDoba(NOC/60);
             JE_DEN = !JE_DEN;
         }
     }
 };
 
+std::string cas(double t) {
+    int s = (t - int(t))*60;
+    int m = int(t) % 60;
+
+    // Casova korekce (6 hodin je rano)
+    int h = (int(t/60) + 6) % 24;
+    
+    std::string sh;
+    std::string sm;
+    std::string ss;
+    if (h < 10) { sh = "0" + std::to_string(h); } else {sh = std::to_string(h);}
+    if (m < 10) { sm = "0" + std::to_string(m); } else {sm = std::to_string(m);}
+    if (s < 10) { ss = "0" + std::to_string(s); } else {ss = std::to_string(s);}
+
+    return sh + ":" + sm + ":" + ss;
+}
+
 int main(int argc, char *argv[]) {
 
-    Init(0,(7*(DEN+NOC))); // 7 dni.
+    Init(0,(7*(DEN+NOC))-1); // 7 dni.
     (new Den_Noc)->Activate();
 
     (new Stado)->Activate();
