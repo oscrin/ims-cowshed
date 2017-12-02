@@ -3,15 +3,17 @@
 *
 *	FILE: Biovavrinec.cpp - source code
 *
-*	AUTHORS: Jan Kubica 		    (xkubic39) - xkubic39@stud.fit.vutbr.cz
-*			     Rostislav Navrátil (xnavra57) - xnavra57@stud.fit.vutbr.cz - zastupce tymu
+*	AUTHORS: Jan Kubica 		(xkubic39) - xkubic39@stud.fit.vutbr.cz
+*			 Rostislav Navrátil (xnavra57) - xnavra57@stud.fit.vutbr.cz - zastupce tymu
 */
 
 
 #include "simlib.h"
 #include <stdio.h>
 #include <iostream>
-using namespace std;
+
+using std::cout;
+using std::endl;
 
 // Urcuje pracovni dobu.
 bool JE_DEN = true;
@@ -29,8 +31,8 @@ unsigned int pocetPodojenychKrav = 0;
 unsigned int pocetDojicichKrav = 0;
 
 // Cas.
-const int MINUTA = 60;
-const int HODINA = 60*60;
+const int MINUTA = 1;
+const int HODINA = 60*MINUTA;
 
 // Pracovni doba.
 const int DEN = 13* HODINA;
@@ -92,6 +94,7 @@ class Krava : public Process {
 
                 cout << "Krava je uvolnena z boxu dojickou." << endl;
 
+                WaitUntil(KRAVY_READY == false);
             }
             else {
               WaitUntil(KRAVY_READY);
@@ -111,6 +114,7 @@ class Stado : public Process{
                     cout << "Dojicka nahani kravy." << endl;
 
                     PO_PASTVE = false;
+
                     Enter(dojicka);
                     Wait(Uniform(20*MINUTA,30*MINUTA));
                     Leave(dojicka);
@@ -159,10 +163,10 @@ class Den_Noc : public Process {
     void Behavior() {
         while (1) {
             cout << "Je den." << endl;
-            Wait(DEN); denDoba(DEN/3600);
+            Wait(DEN); denDoba(DEN/60);
             JE_DEN = !JE_DEN;
             cout << "Je noc." << endl;
-            Wait(NOC); nocDoba(NOC/3600);
+            Wait(NOC); nocDoba(NOC/60);
             JE_DEN = !JE_DEN;
         }
     }
@@ -170,7 +174,7 @@ class Den_Noc : public Process {
 
 int main(int argc, char *argv[]) {
 
-    Init(0,(1*(DEN+NOC))); // 7 dni.
+    Init(0,(7*(DEN+NOC))); // 7 dni.
     (new Den_Noc)->Activate();
 
     (new Stado)->Activate();
