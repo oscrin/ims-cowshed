@@ -93,7 +93,6 @@ public:
                 double nadojeno = Uniform(8, 10);
                 POSLEDNI_DOJENI += nadojeno;
                 MLEKO += nadojeno; // Produkce mleka.
-                pocetPodojenychKrav++;
 
                 cout << "\e[33m[" << cas(Time) << "]\e[39m " << "Krava cislo " << cisloKravy << " nadojila " << nadojeno << " litru mleka." << endl;
                 
@@ -103,6 +102,8 @@ public:
                 Leave(dojicka);
 
                 cout << "\e[33m[" << cas(Time) << "]\e[39m " << "Krava cislo " << cisloKravy << " je uvolnena z boxu dojickou." << endl;
+
+                pocetPodojenychKrav++;
 
                 WaitUntil(KRAVY_READY == false);
                 
