@@ -68,13 +68,15 @@ Store kravy("Kravy", POCET_KRAV);
 
 std::string cas(double t);
 
-int cisloKravy = 1;
-
 class Krava : public Process {
+    int cisloKravy;
+public:
+    Krava(int cislo) { cisloKravy = cislo; }
+
     void Behavior() {
         while(1) {
             if (KRAVY_READY) {                  
-
+                                
                 Enter(stani);
                 Enter(dojicka);
                 
@@ -102,14 +104,12 @@ class Krava : public Process {
 
                 cout << "\e[33m[" << cas(Time) << "]\e[39m " << "Krava cislo " << cisloKravy << " je uvolnena z boxu dojickou." << endl;
 
-                cisloKravy++;
-
                 WaitUntil(KRAVY_READY == false);
+                
             }
             else {
               WaitUntil(KRAVY_READY);
-              POSLEDNI_DOJENI = 0;
-              cisloKravy = 1;   
+              POSLEDNI_DOJENI = 0;   
             }
         }
     }
@@ -210,8 +210,8 @@ int main(int argc, char *argv[]) {
     (new Stado)->Activate();
 
     // Vygenerovat 50 krav do systemu.
-    for (int a = 0; a < POCET_KRAV; a++)
-        (new Krava)->Activate();
+    for (int a = 1; a <= POCET_KRAV; a++)
+        (new Krava(a))->Activate();
 
     Run();
 
